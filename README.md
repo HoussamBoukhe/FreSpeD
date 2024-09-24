@@ -1,5 +1,7 @@
 # FreSpeD
-Frequency specific change point detection (<tt>FreSpeD</tt>) 
+
+**Frequency specific change point detection (FreSpeD)** is a method proposed by Schröder and Ombao [Schröder & Ombao, 2019](https://doi.org/10.1101/2019.12.12.874719) for detecting change points in EEG signals. By locally estimating spectral density matrices and applying CUSUM statistics, FreSpeD efficiently identifies significant changes in the spectral profile. The method has demonstrated speed and effectiveness in detecting epileptic seizures.
+
 
 ## Installation
 
