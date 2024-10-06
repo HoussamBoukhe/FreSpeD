@@ -58,7 +58,7 @@ tv_estimations_cp<-function (X, channelNames = 1:dim(X)[2], windowLen, M_welch =
                 logScale = logScale, padEnd = padEnd, transform = transform, 
                 plot = plot, bands_analysis = bands_analysis, f_sampling = f_sampling)
 
-            cp[[cnt]] <- FreSpeD::FreSpeD_inner(S, thresh = thresh, check_neighborhood = check_neighborhood, 
+            cp[[cnt]] <- FreSpeD::cusum_stat(S, thresh = thresh, check_neighborhood = check_neighborhood, 
                 check_par = check_par, delta = delta)
             cnt <- cnt + 1
         }
@@ -78,7 +78,7 @@ tv_estimations_cp<-function (X, channelNames = 1:dim(X)[2], windowLen, M_welch =
                 normalize = normalize, overlap = overlap, M_welch = M_welch, 
                 logScale = logScale, padEnd = padEnd, transform = transform, 
                 plot = plot, bands_analysis = bands_analysis, f_sampling = f_sampling)
-            FreSpeD::FreSpeD_inner(S, thresh = thresh, check_neighborhood = check_neighborhood, 
+            FreSpeD::cusum_stat(S, thresh = thresh, check_neighborhood = check_neighborhood, 
                 check_par = check_par, delta = delta)
         }
         # Close the parallel backend once the computation are finished

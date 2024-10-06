@@ -1,6 +1,6 @@
-#' @name FreSpeD_inner
+#' @name cusum_stat
 #' @title Apply CUSUM statistics
-#' @description Applying the CUSUM statistics to get the change points 
+#' @description Applyi the CUSUM statistics to the estimated spectral quantities to get the change points 
 #' 
 #' @param S numeric array, The estimated spectral quantities for each window (lines) and for the corresponding frequencies (columns)
 #' @param thresh numeric, The threshold to decide that a point is a change point, using the statistics eq (5), the 
@@ -14,7 +14,7 @@
 #' 
 #' @return numric array, the values of UHcusum on the detected change points for each frquencies, and 0 otherwise
 #' 
-FreSpeD_inner <- function(S, thresh = 0.8 * log(dim(S)[2])^(1.1), check_neighborhood = TRUE, 
+cusum_stat <- function(S, thresh = 0.8 * log(dim(S)[2])^(1.1), check_neighborhood = TRUE, 
                           check_par = floor(log(dim(S)[2])^2.1/5), cp = array(0, dim(S)), 
                           s = 1, delta = 1) {
   D <- dim(S)[1]
@@ -82,8 +82,8 @@ FreSpeD_inner <- function(S, thresh = 0.8 * log(dim(S)[2])^(1.1), check_neighbor
       
       if (all(db <= nrow(cp))) {
         cp[db, b + s - 1] <- cp[db, b + s - 1] + XM[db, b]
-        cp <- FreSpeD_inner(S[, 1:b], thresh, check_neighborhood, check_par, cp, s = s, delta)
-        cp <- FreSpeD_inner(S[, (b + 1):n], thresh, check_neighborhood, check_par, cp, s = (s + b), delta)
+        cp <- cusum_stat(S[, 1:b], thresh, check_neighborhood, check_par, cp, s = s, delta)
+        cp <- cusum_stat(S[, (b + 1):n], thresh, check_neighborhood, check_par, cp, s = (s + b), delta)
       } else {
         warning("Index out of bounds, skipping update.") 
       }
