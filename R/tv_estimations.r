@@ -1,6 +1,7 @@
-#' @name FreSpeD
-#' @title Frequency specific change point detection
-#' @description The FreSpeD algorithm detects change points in the autospectra and cross-coherences of multichannel EEG traces.
+#' @name tv_estimations_cp
+#' @title Time varying estimations of cross-coherences and spectrums, and change points
+#' @description This function performs the time varying estimations of cross-coherences and spectrums, then applies the CUSUM
+#' statistics to detect change points.
 #' 
 #' @param X numeric array, rows: observations in time, columns: channels.
 #' @param channelNames list of channel names; if not specified, channels are enumerated.
@@ -21,7 +22,7 @@
 #' @param f_sampling numeric, sampling frequency
 #' 
 #' @return list of arrays, a list containing the the change points for each pair of channels
-FreSpeD<-function (X, channelNames = 1:dim(X)[2], windowLen, M_welch = round_right(windowLen/20), 
+tv_estimations_cp<-function (X, channelNames = 1:dim(X)[2], windowLen, M_welch = round_right(windowLen/20), 
     overlap = 0, normalize = FALSE, padEnd = TRUE, logScale = FALSE, 
     transform = "FZ", plot = FALSE, check_neighborhood = TRUE, check_par = NaN,
     threshFun = function(Tv) {
@@ -52,12 +53,12 @@ FreSpeD<-function (X, channelNames = 1:dim(X)[2], windowLen, M_welch = round_rig
     if (nCores == 1) { 
         cnt <- 1
         for (id in (idlist)) {
-            S <- computeTVSpectralQuant(X, id, windowLen = windowLen, 
+            S <- FreSpeD::computeTVSpectralQuant(X, id, windowLen = windowLen, 
                 normalize = normalize, overlap = overlap, M_welch = M_welch, 
                 logScale = logScale, padEnd = padEnd, transform = transform, 
                 plot = plot, bands_analysis = bands_analysis, f_sampling = f_sampling)
 
-            cp[[cnt]] <- FreSpeD_inner(S, thresh = thresh, check_neighborhood = check_neighborhood, 
+            cp[[cnt]] <- FreSpeD::FreSpeD_inner(S, thresh = thresh, check_neighborhood = check_neighborhood, 
                 check_par = check_par, delta = delta)
             cnt <- cnt + 1
         }
@@ -73,12 +74,11 @@ FreSpeD<-function (X, channelNames = 1:dim(X)[2], windowLen, M_welch = round_rig
         registerDoParallel(cores = nCores)
 
         cp <- foreach(id = idlist, .inorder = TRUE) %dopar% {
-            source("FreSpeD.R") #... think of deviding this code to multiple files for reusability
-            S <- computeTVSpectralQuant(X, id, windowLen = windowLen, 
+            S <- FreSpeD::computeTVSpectralQuant(X, id, windowLen = windowLen, 
                 normalize = normalize, overlap = overlap, M_welch = M_welch, 
                 logScale = logScale, padEnd = padEnd, transform = transform, 
                 plot = plot, bands_analysis = bands_analysis, f_sampling = f_sampling)
-            FreSpeD_inner(S, thresh = thresh, check_neighborhood = check_neighborhood, 
+            FreSpeD::FreSpeD_inner(S, thresh = thresh, check_neighborhood = check_neighborhood, 
                 check_par = check_par, delta = delta)
         }
         # Close the parallel backend once the computation are finished
