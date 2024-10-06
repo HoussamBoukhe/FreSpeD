@@ -1,6 +1,6 @@
 #' @name cusum_stat
 #' @title Apply CUSUM statistics
-#' @description Applyi the CUSUM statistics to the estimated spectral quantities to get the change points 
+#' @description Apply the CUSUM statistics to the estimated spectral quantities to get the change points 
 #' 
 #' @param S numeric array, The estimated spectral quantities for each window (lines) and for the corresponding frequencies (columns)
 #' @param thresh numeric, The threshold to decide that a point is a change point, using the statistics eq (5), the 
