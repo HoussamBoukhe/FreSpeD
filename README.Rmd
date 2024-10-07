@@ -20,7 +20,7 @@ This package was initially published on CRAN in September 2015 and is compatible
 You can install the development version of <tt>FreSpeD</tt> from
 [GitHub](https://github.com) with:
 
-``` r
+```{r}
 devtools::install_github("HoussamBoukhe/FreSpeD")
 ```
 
