@@ -1,4 +1,4 @@
 ^renv$
 ^renv\.lock$
-^FreSpeD\.Rproj$
+^.*\.Rproj$
 ^\.Rproj\.user$
