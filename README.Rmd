@@ -49,7 +49,7 @@ library(FreSpeD)
 library(doParallel)
 library(foreach)
 library(ggplot2)
-library(reshape)
+library(reshape2)
 library(eegkit)
 ```
 
@@ -188,6 +188,12 @@ two components share a common alpha frequency.
 ```{r}
 
 cp <- FreSpeD:::tv_estimations_cp(X, windowLen = 512, M_welch = 2,plot = FALSE, bands_analysis = TRUE, f_sampling = f_sampling) 
-summary <- FreSpeD:::FreSpeD_summary(cp, plot = TRUE)
+summary <- FreSpeD:::FreSpeD_summary(cp, plot = FALSE, windowLen = 512)
+
 ```
 
+The length of the time series X is 30720, and the change occurs at 15360.
+
+```{r}
+summary$`Change points over time`
+```
