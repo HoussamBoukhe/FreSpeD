@@ -79,7 +79,6 @@ tv_estimations_cp<-function (X, channelNames = 1:dim(X)[2], windowLen, M_welch =
         registerDoParallel(cores = nCores)
 
         cp <- foreach(id = idlist, .inorder = TRUE) %dopar% {
-            source("FreSpeD.R") #... 
             S <- computeTVSpectralQuant(X, id, windowLen = windowLen, 
                 normalize = normalize, overlap = overlap, M_welch = M_welch, 
                 logScale = logScale, padEnd = padEnd, transform = transform, 

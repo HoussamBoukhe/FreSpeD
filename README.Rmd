@@ -1,0 +1,193 @@
+---
+title: "README"
+output: html_document
+date: "2024-10-07"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# FreSpeD
+
+**Frequency specific change point detection (FreSpeD)** is a method proposed by [Schröder & Ombao, 2019](https://doi.org/10.1080/01621459.2018.1476238) for detecting change points in EEG signals. By locally estimating spectral density matrices and applying CUSUM statistics, FreSpeD efficiently identifies significant changes in the spectral profile. The method has demonstrated speed and effectiveness in detecting epileptic seizures.
+
+This package was initially published on CRAN in September 2015 and is compatible with R version 3.2.2. However, it has since been archived and is no longer available for versions of R released after 3.2.2. The purpose of this repository is to provide a reimplementation of the original package and introduce new functionalities.
+
+
+## Installation
+
+You can install the development version of <tt>FreSpeD</tt> from
+[GitHub](https://github.com) with:
+
+``` r
+devtools::install_github("HoussamBoukhe/FreSpeD")
+```
+
+## Dependencies
+R version: 4.4.1
+
+doParallel 1.0.17
+
+foreach 1.5.2
+
+reshape 1.4.4
+
+ggplot2 3.5.1
+
+# Examples
+
+We give some examples of application of the FreSpeD method to simulated data,
+then to datasets from [Physionet](https://physionet.org/).
+
+For simulated data, we use a mixture of AR(2) models. This can be done as 
+follows 
+
+
+```{r}
+library(FreSpeD)
+library(doParallel)
+library(foreach)
+library(ggplot2)
+library(reshape)
+library(eegkit)
+```
+
+```{r echo=FALSE}
+set.seed(2024)
+
+```
+
+```{r}
+# 1 --- Generating synthetic AR(2) models
+f_sampling <- 256 # Sampling rate 
+
+magnitude <- 1.2
+phase_delta <- 2/f_sampling
+phase_theta <- 6/f_sampling
+phase_alpha <- 10/f_sampling
+phase_beta <- 21/f_sampling
+phase_gamma <- 40/f_sampling
+
+
+model_delta <- list(ar = c(2/magnitude * cos(2*pi*phase_delta), -1/magnitude^2))
+model_theta <- list(ar = c(2/magnitude * cos(2*pi*phase_theta), -1/magnitude^2))
+model_alpha <- list(ar = c(2/magnitude * cos(2*pi*phase_alpha), -1/magnitude^2))
+model_beta <- list(ar = c(2/magnitude * cos(2*pi*phase_beta), -1/magnitude^2))
+model_gamma <- list(ar = c(2/magnitude * cos(2*pi*phase_gamma), -1/magnitude^2))
+
+```
+
+
+The above parametrization of the AR(2) model is used to be able to choose the 
+peack of the generated model around a given frequency. For more details see
+[Hernando Ombao and Marco Pinto. Spectral dependence](https://www.sciencedirect.com/science/article/pii/S2452306222001101)
+
+```{r}
+# Generating the building blocks for the synthetic data 
+Z_delta <- arima.sim(model = model_delta, n = 256*60)
+Z_theta <- arima.sim(model = model_theta, n = 256*60)
+Z_alpha <- arima.sim(model = model_alpha, n = 256*60)
+Z_beta <- arima.sim(model = model_beta, n = 256*60)
+Z_gamma <- arima.sim(model = model_gamma, n= 256*60)
+
+spec_density_delta <- spec.pgram(Z_delta, log = 'no', plot = FALSE)
+spec_density_theta <- spec.pgram(Z_theta, log = 'no', plot = FALSE)
+spec_density_alpha <- spec.pgram(Z_alpha, log = 'no', plot = FALSE)
+spec_density_beta <- spec.pgram(Z_beta, log = 'no', plot = FALSE)
+spec_density_gamma <- spec.pgram(Z_gamma, log = 'no', plot = FALSE)
+
+# Multiply frequencies by the sampling rate
+frequencies_hz <- spec_density_alpha$freq * f_sampling
+
+# Plot the periodogram with adjusted frequencies
+plot(frequencies_hz, spec_density_delta$spec, type = "l", xlab = "Frequency (Hz)", ylab = "Spectral Density", col = "red")
+plot(frequencies_hz, spec_density_theta$spec, col = "blue", type ='l', xlab = "Frequency (Hz)", ylab = "Spectral Density")
+plot(frequencies_hz, spec_density_alpha$spec, col = "green", type ='l', xlab = "Frequency (Hz)", ylab = "Spectral Density")
+plot(frequencies_hz, spec_density_beta$spec, col = "orange", type = 'l', xlab = "Frequency (Hz)", ylab = "Spectral Density")
+plot(frequencies_hz, spec_density_gamma$spec, col = "purple", type = 'l', xlab = "Frequency (Hz)", ylab = "Spectral Density")
+
+```
+The support of each model has to be in:
+
+delta: 0.1-5 Hz
+theta: 5-8 Hz
+alpha: 8-12 Hz
+beta: 12-30 Hz
+gamma: 30-50 Hz,
+
+so we apply a linear filter to cut the supports of the spectral densities
+
+```{r}
+
+Z_delta <- eegfilter(Z_delta, Fs = f_sampling, lower = 1, upper = 4, method = "butter", order = 4)
+Z_theta <- eegfilter(Z_theta, Fs = f_sampling, lower = 4, upper = 8, method = "butter", order = 4)
+Z_alpha <- eegfilter(Z_alpha, Fs = f_sampling, lower = 8, upper = 12, method = "butter", order = 4)
+Z_beta <- eegfilter(Z_beta, Fs = f_sampling, lower = 13, upper = 30, method = "butter", order = 4)
+Z_gamma <- eegfilter(Z_gamma, Fs = f_sampling, lower = 30, upper = 50, method = "butter", order = 4)
+
+spec_density_delta <- spec.pgram(Z_delta, log = 'no', plot = FALSE)
+spec_density_theta <- spec.pgram(Z_theta, log = 'no', plot = FALSE)
+spec_density_alpha <- spec.pgram(Z_alpha, log = 'no', plot = FALSE)
+spec_density_beta <- spec.pgram(Z_beta, log = 'no', plot = FALSE)
+spec_density_gamma <- spec.pgram(Z_gamma, log = 'no', plot = FALSE)
+
+# Multiply frequencies by the sampling rate
+frequencies_hz <- spec_density_alpha$freq * f_sampling
+
+# Plot the periodogram with adjusted frequencies
+plot(frequencies_hz, spec_density_delta$spec, type = "l", xlab = "Frequency (Hz)", ylab = "Spectral Density", col = "red")
+plot(frequencies_hz, spec_density_theta$spec, col = "blue", type ='l', xlab = "Frequency (Hz)", ylab = "Spectral Density")
+plot(frequencies_hz, spec_density_alpha$spec, col = "green", type ='l', xlab = "Frequency (Hz)", ylab = "Spectral Density")
+plot(frequencies_hz, spec_density_beta$spec, col = "orange", type = 'l', xlab = "Frequency (Hz)", ylab = "Spectral Density")
+plot(frequencies_hz, spec_density_gamma$spec, col = "purple", type = 'l', xlab = "Frequency (Hz)", ylab = "Spectral Density")
+
+```
+Now, we use the building blocks to generate some examples, then apply the FreSpeD.
+In the following, we generate a bivariate time series X, with a change point in 
+the middle of this time series.
+
+```{r}
+Z <- t(cbind(Z_delta,Z_theta,Z_alpha,Z_beta,Z_gamma))
+
+Mat1 <- matrix(data = c(1,1,0,0,0, 0,0,0,1,1), nrow = 2, ncol = 5, byrow = TRUE)
+Mat2 <- matrix(data = c(1,1,1,0,0, 0,0,1,1,1), nrow = 2, ncol = 5, byrow = TRUE)
+
+# Generate a two dimensional time series, its first component contains 
+# 'delta and theta' frequencies, and its second component contains 'beta and gamma'
+X1 <- t(Mat1%*%Z)
+
+# Generate a two dimensional time series, its first component contains 
+# 'delta, theta and alpha' frequencies, and its second component contains 
+# 'alpha, beta and gamma' 
+X2 <- t(Mat2%*%Z)
+
+X <- rbind(X1,X2)
+
+```
+
+
+```{r}
+# Time variying spectrum of the components of X2
+FreSpeD:::tv_spectrum(X2[,1], windowLen = 512, plot = TRUE)
+FreSpeD:::tv_spectrum(X2[,2], windowLen = 512, plot = TRUE)
+
+```
+
+```{r}
+# Cross-coherence between the channels of X1 and X2
+FreSpeD:::tv_coherence(X1, windowLen = 512, M_welch = 2,plot = TRUE, transform = "",
+            bands_analysis = TRUE, f_sampling = f_sampling)
+FreSpeD:::tv_coherence(X2, windowLen = 512, M_welch = 2, plot = TRUE, transform = "",
+            bands_analysis = TRUE, f_sampling = f_sampling)
+
+```
+Notice the the cross-coherenc between the channels of X2 is 'darker' since its 
+two components share a common alpha frequency.
+
+```{r}
+
+cp <- FreSpeD:::tv_estimations_cp(X, windowLen = 512, M_welch = 2,plot = FALSE, bands_analysis = TRUE, f_sampling = f_sampling) 
+summary <- FreSpeD:::FreSpeD_summary(cp, plot = TRUE)
+```
+

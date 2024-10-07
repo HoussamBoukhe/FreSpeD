@@ -32,7 +32,7 @@ FreSpeD_summary<-function (cp, channelNames = c(), windowLen = 1, plot = TRUE)
         stop("Bad input. The length of channelNames is not equal to the number of channels given by the list of spectral quantities")
     if (length(channelNames) == 0) 
         channelNames <- 1:D
-    n <- FreSpeD::name_identifiers(channelNames) # c("1","2",...,"D", "1.2",...,"1.D","2.3",...,"D-1.D")
+    n <- name_identifiers(channelNames) # c("1","2",...,"D", "1.2",...,"1.D","2.3",...,"D-1.D")
     nCpC1 <- nCpC2 <- list() # number of change points, indices of change points respectively
     nCpF <- nCpFA <- array(0, c(dim(cp[[1]])[1], 1)) # ...number change points frquencies, number change points frequencies auto 
     nCpT <- nCpTA <- array(0, c(dim(cp[[1]])[2], 1)) # ...number change points times, number change points time auto
