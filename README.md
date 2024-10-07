@@ -26,3 +26,29 @@ reshape 1.4.4
 ggplot2 3.5.1
 
 # Examples
+
+We give some examples of application of the FreSpeD method to simulated data,
+then to datasets from [Physionet](https://physionet.org/).
+
+For simulated data, we use a mixture of AR(2) models. This can be done as 
+follows 
+
+
+``` r
+x <- 3
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
