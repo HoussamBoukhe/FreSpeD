@@ -31,7 +31,7 @@ We give some examples of application of the FreSpeD method to simulated data,
 then to datasets from [Physionet](https://physionet.org/).
 
 For simulated data, we use a mixture of AR(2) models. This can be done as 
-follows 
+follows: 
 
 
 ``` r
