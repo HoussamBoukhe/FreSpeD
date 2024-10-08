@@ -197,3 +197,46 @@ The length of the time series X is 30720, and the change occurs at 15360.
 ```{r}
 summary$`Change points over time`
 ```
+## Application to real EEG datasets
+In this section, we use datasets from Physionet to test the FreSpeD algorithm and conduct analyses using it.
+```{r}
+# This chunk defines a functions that read an EDF file, then returns the time 
+# series as a matrix
+install.packages('edfReader')
+library(edfReader)
+# Specify the path to your EDF file
+edf_get_signals <-function(edf_file_path, nbr_channels = NULL){ 
+  
+  edf_header <- readEdfHeader(edf_file_path)
+
+  if (is.null(nbr_channels)) {
+    nbr_channels <- edf_header$nSignals
+  }
+  
+  edf_signals <- readEdfSignals(edf_header)
+  signals_list <- list()
+  
+  # Loop over all channels and store the signals in the list
+  for (i in seq_along(edf_signals)) {
+    signals_list[[i]] <- edf_signals[[i]]$signal
+  }
+  
+  # Combine the list of signals into a matrix
+  signal_matrix <- do.call(cbind, signals_list)
+  
+  signal_matrix <- signal_matrix[,1:nbr_channels]
+  return(signal_matrix)
+}
+
+```
+### Application to EEG During Mental Arithmetic Tasks
+In this study, we analyzed 10 patients (the original dataset contain 36 patient), 
+each with two recordings: one during rest and another while performing a mental arithmetic task. We employed the FreSpeD method to calculate the total number of change points in each recording and subsequently compared the total number of change points observed during rest versus task performance.
+
+```{r}
+
+
+```
+
+
+
