@@ -202,7 +202,7 @@ In this section, we use datasets from Physionet to test the FreSpeD algorithm an
 ```{r}
 # This chunk defines a functions that read an EDF file, then returns the time 
 # series as a matrix
-install.packages('edfReader')
+#install.packages('edfReader')
 library(edfReader)
 # Specify the path to your EDF file
 edf_get_signals <-function(edf_file_path, nbr_channels = NULL){ 
@@ -234,7 +234,36 @@ In this study, we analyzed 10 patients (the original dataset contain 36 patient)
 each with two recordings: one during rest and another while performing a mental arithmetic task. We employed the FreSpeD method to calculate the total number of change points in each recording and subsequently compared the total number of change points observed during rest versus task performance.
 
 ```{r}
+file_path <- "Data/eegmat"
+paths_rest <- c()
+paths_task <- c()
 
+for (i in 0:9) {
+  path_rest <- paste(file_path, sprintf("/Subject%02d_1.edf", i), sep="")
+  path_task <- paste(file_path, sprintf("/Subject%02d_2.edf", i), sep="")
+  paths_rest <- c(paths_rest, path_rest)
+  paths_task <- c(paths_task, path_task)
+}
+
+# The following lists will contains the summary of the application of the FreSpeD
+# method to the recordings
+list_cp_rest <- list() 
+list_cp_task <- list()
+
+for (i in 1:2){
+  print(i)
+  signal_rest <- edf_get_signals(paths_rest[i], 21)
+  len_signal_rest <- dim(signal_rest)[1]
+  
+  signal_rest <- edf_get_signals(paths_rest[i], 21)[1:(len_signal_rest - 1000),]
+  signal_task <- edf_get_signals(paths_task[i], 21)[1:30000,]
+  
+  cp_rest <- FreSpeD:::tv_estimations_cp(signal_task, windowLen = 512, nCores =1, plot =FALSE)
+  cp_task <- FreSpeD:::tv_estimations_cp(signal_task, windowLen = 512, nCores= 1, plot = FALSE)
+  
+  list_cp_rest[[i]] <- FreSpeD:::FreSpeD_summary(cp_rest, windowLen = 500, plot = FALSE)
+  list_cp_task[[i]] <- FreSpeD:::FreSpeD_summary(cp_task, windowLen = 500, plot = FALSE)
+}
 
 ```
 
