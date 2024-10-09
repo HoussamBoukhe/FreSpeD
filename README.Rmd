@@ -250,22 +250,36 @@ for (i in 0:9) {
 list_cp_rest <- list() 
 list_cp_task <- list()
 
-for (i in 1:2){
-  print(i)
+for (i in 1:10){
+  print(paste("Analysing patient", i))
   signal_rest <- edf_get_signals(paths_rest[i], 21)
   len_signal_rest <- dim(signal_rest)[1]
   
   signal_rest <- edf_get_signals(paths_rest[i], 21)[1:(len_signal_rest - 1000),]
   signal_task <- edf_get_signals(paths_task[i], 21)[1:30000,]
   
-  cp_rest <- FreSpeD:::tv_estimations_cp(signal_task, windowLen = 512, nCores =1, plot =FALSE)
+  cp_rest <- FreSpeD:::tv_estimations_cp(signal_rest, windowLen = 512, nCores =1, plot =FALSE)
   cp_task <- FreSpeD:::tv_estimations_cp(signal_task, windowLen = 512, nCores= 1, plot = FALSE)
   
-  list_cp_rest[[i]] <- FreSpeD:::FreSpeD_summary(cp_rest, windowLen = 500, plot = FALSE)
-  list_cp_task[[i]] <- FreSpeD:::FreSpeD_summary(cp_task, windowLen = 500, plot = FALSE)
+  list_cp_rest[[i]] <- FreSpeD:::FreSpeD_summary(cp_rest, windowLen = 512, plot = FALSE)
+  list_cp_task[[i]] <- FreSpeD:::FreSpeD_summary(cp_task, windowLen = 512, plot = FALSE)
 }
 
 ```
 
+```{r}
+nbr_cp_rest <- c()
+nbr_cp_task <- c()
 
+for (i in 1:10){
+  nbr_cp_r <- list_cp_rest[[i]]$`Total # change points`
+  nbr_cp_t <- list_cp_task[[i]]$`Total # change points`
+  
+  nbr_cp_rest <- c(nbr_cp_rest, nbr_cp_r)
+  nbr_cp_task <- c(nbr_cp_task, nbr_cp_t)
+}
+
+hist(nbr_cp_rest, )
+
+```
 
