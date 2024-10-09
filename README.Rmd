@@ -251,15 +251,15 @@ list_cp_rest <- list()
 list_cp_task <- list()
 
 for (i in 1:10){
-  print(paste("Analysing patient", i))
+  print(paste("Analysing subject", i))
   signal_rest <- edf_get_signals(paths_rest[i], 21)
   len_signal_rest <- dim(signal_rest)[1]
   
   signal_rest <- edf_get_signals(paths_rest[i], 21)[1:(len_signal_rest - 1000),]
   signal_task <- edf_get_signals(paths_task[i], 21)[1:30000,]
   
-  cp_rest <- FreSpeD:::tv_estimations_cp(signal_rest, windowLen = 512, nCores =12, plot =FALSE)
-  cp_task <- FreSpeD:::tv_estimations_cp(signal_task, windowLen = 512, nCores= 12, plot = FALSE)
+  cp_rest <- FreSpeD:::tv_estimations_cp(signal_rest, windowLen = 512, nCores =8, plot =FALSE)
+  cp_task <- FreSpeD:::tv_estimations_cp(signal_task, windowLen = 512, nCores= 8, plot = FALSE)
   
   list_cp_rest[[i]] <- FreSpeD:::FreSpeD_summary(cp_rest, windowLen = 512, plot = FALSE)
   list_cp_task[[i]] <- FreSpeD:::FreSpeD_summary(cp_task, windowLen = 512, plot = FALSE)
@@ -279,7 +279,40 @@ for (i in 1:10){
   nbr_cp_task <- c(nbr_cp_task, nbr_cp_t)
 }
 
-hist(nbr_cp_rest, )
 
 ```
 
+
+```{r}
+plot(nbr_cp_rest, 
+     type = "p",  # Type "o" for points and lines
+     col = "blue", 
+     pch = 16,  # Solid circle for points
+     xlab = "Subject", 
+     ylab = "Number of Change Points", 
+     main = "Change Points: Rest vs Task", 
+     ylim = range(c(nbr_cp_rest, nbr_cp_task)))  # Set y-axis limits to encompass both datasets
+
+# Add lines for nbr_cp_task
+lines(nbr_cp_task, 
+      type = "p",  # Type "o" for points and lines
+      col = "red", 
+      pch = 15)  
+
+# Add a legend to differentiate the datasets
+legend("topright", legend = c("Rest", "Task"), 
+       col = c("blue", "red"), 
+       pch = c(16,15))  
+
+```
+
+
+
+Notice that in most cases, the number of change point detected during the mental 
+is higher than the number of change point during rest.
+
+### Application to epilepsy dataset 
+
+```{r}
+
+```
