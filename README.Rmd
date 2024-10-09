@@ -314,5 +314,58 @@ is higher than the number of change point during rest.
 ### Application to epilepsy dataset 
 
 ```{r}
+subject_1 <- "Data/eeg-seizure/chb01/chb01_03.edf"
+subject_2 <- "Data/eeg-seizure/chb03/chb03_01.edf"
 
+eeg_s1 <- edf_get_signals(subject_1, nbr_channels = 23)
+# eeg_s2 <- edf_get_signals(subject_2, nbr_channels = 23)
+
+```
+
+Each recording last one hour, with 256 Hz sampling rate. For subject 1, the epilepsy 
+happened between the seconds 2996-3036. To speed up the computation, we focus our analysis on the recording segment between the 2800th and 3600th seconds
+
+```{r}
+eeg_s1r <- eeg_s1[(2800*256 + 1):(3600*256),]
+
+cp <- FreSpeD:::tv_estimations_cp(eeg_s1r, windowLen = 256, nCores = 8)
+
+```
+
+
+```{r}
+cp_sum <- FreSpeD:::FreSpeD_summary(cp, windowLen = 256, plot = FALSE)
+
+total_nbr_cp <-  cp_sum$`Change points over time`
+total_nbr_cp_auto <- cp_sum$`Autospectral change points over time`
+
+# Calculate the new x-axis values
+x_values <- seq(2800, 3600, length.out = length(total_nbr_cp))
+
+# Plot with the new x-axis range
+plot(x_values, cumsum(total_nbr_cp), type = "l", 
+     xlab = "Time in seconds", ylab = "Cumulative sum of change points",
+     xlim = c(2800, 3600))
+
+# Adjust the abline positions
+abline(v = 2800 + 196, col = "red", lty = 2)
+abline(v = 2800 + 236, col = "green", lty = 2)
+
+# Add the other lines with the new x-values
+lines(x_values, cumsum(total_nbr_cp_auto), col = "blue")
+lines(x_values, cumsum(total_nbr_cp) - cumsum(total_nbr_cp_auto), col = "brown")
+
+# Add the first legend in the top left
+legend("topleft", 
+       legend = c("Change points total", "Change points in autospectra", "Change points in cross-coherences"), 
+       col = c("black", "blue", "brown"), 
+       lty = 1,
+       cex = 0.8)
+
+# Add the new legend in the top right
+legend("topright", 
+       legend = c("Start of the seizure", "End of the seizure"), 
+       col = c("red", "green"), 
+       lty = 2,
+       cex = 0.8)
 ```
