@@ -30,7 +30,7 @@ ggplot2 3.5.1
 We give some examples of application of the FreSpeD method to simulated data,
 then to datasets from [Physionet](https://physionet.org/).
 
-More details can be found on the folder README.Rmd
+More details can be found in the README.Rmd file
 
 
 
